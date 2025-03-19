@@ -45,14 +45,23 @@ jobs:
       - name: Install macOS Docker Desktop app
         shell: bash
         run: |
-          /usr/bin/open /Applications/Docker.app --args --unattended --telemetry
+          /usr/bin/open /Applications/Docker.app --args --unattended --telemetry & sleep 120
           echo "Docker starting..."
 
       - name: Wait for Docker to be up and running
         shell: bash
         run: |
-          until docker ps; do echo "docker not ready, sleep 10 s and try again"; sleep 10; done
-          echo "Docker started and ready"
+          tries=0
+          until docker ps || [ $tries -ge 20 ]; do
+            echo "Docker daemon not yet ready, retrying in 10 seconds..."
+            sleep 10
+            tries=$((tries+1))
+            if [ $tries -eq 12 ]; then
+              echo "Docker daemon did not start in time."
+              exit 1
+            fi
+          done
+          echo "Docker started and ready."
           docker version
 
       - name: Pull AI Model
