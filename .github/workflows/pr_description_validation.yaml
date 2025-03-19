@@ -1,8 +1,6 @@
 name: "Validate PR with Docker Model Runner"
 on:
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   ai-pr-check:
