@@ -26,9 +26,12 @@ jobs:
           buildUrl="https://desktop-stage.docker.com/mac/main/arm64/186043/Docker.dmg"
 
           sudo mkdir -p /Library/PrivilegedHelperTools
+          echo "Downloading Docker Desktop..."
           curl --fail -o ./temp/DockerDesktop.dmg $buildUrl
+          echo "Mounting Docker Desktop DMG..."
           /usr/bin/hdiutil attach -noverify ./temp/DockerDesktop.dmg -mountpoint ./mount/desktop -nobrowse
           echo "dmg mounted"
+          echo "Installing Docker Desktop..."
           sudo ./mount/desktop/Docker.app/Contents/MacOS/install --accept-license --user runner
           echo "dmg installed"
 
@@ -39,14 +42,23 @@ jobs:
           echo "ls ./cache/desktopInstallSettings/"
           ls ./cache/desktopInstallSettings/ || true
 
+          echo "Unmounting DMG..."
           /usr/bin/hdiutil detach ./mount/desktop
           echo "dmg unmounted"
 
       - name: Install macOS Docker Desktop app
         shell: bash
         run: |
-          /usr/bin/open /Applications/Docker.app --args --unattended --telemetry & sleep 120
-          echo "Docker starting..."
+          echo "Starting Docker Desktop in unattended mode..."
+          /usr/bin/open /Applications/Docker.app --args --unattended --telemetry
+          echo "Waiting 120 seconds for Docker Desktop to start..."
+          sleep 120
+          echo "Checking Docker processes after startup..."
+          ps aux | grep -i docker
+          echo "Verifying Docker socket status..."
+          ls -la /var/run/docker.sock || echo "Docker socket not found!"
+          echo "Displaying recent Docker logs..."
+          log show --predicate 'process contains "Docker"' --last 2m || echo "No Docker logs found!"
 
       - name: Wait for Docker to be up and running
         shell: bash
