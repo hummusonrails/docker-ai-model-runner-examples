@@ -1,0 +1,47 @@
+name: "Validate PR with Docker Model Runner"
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ai-pr-check:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Block calls to segment.io
+        shell: bash
+        run: |
+          grep -qxF '127.0.0.2 api.segment.io' /etc/hosts || echo '127.0.0.2 api.segment.io' | sudo tee -a /etc/hosts
+
+      - name: Install Docker Desktop with Model Runner
+        shell: bash
+        run: |
+          mkdir ./temp
+          mkdir ./mount
+          curl --fail -o ./temp/Docker.dmg "https://desktop-stage.docker.com/mac/main/arm64/186043/Docker.dmg"
+          hdiutil attach ./Docker.dmg -mountpoint ./mount -nobrowse
+          sudo ./mount/Docker.app/Contents/MacOS/install --accept-license --user runner
+          hdiutil detach ./mount
+          open -a Docker
+          sleep 60
+
+      - name: Pull AI Model
+        shell: bash
+        run: |
+          docker model pull ignaciolopezluna020/llama3.2-1b
+
+      - name: Validate PR Description
+        env:
+          PR_DESCRIPTION: ${{ github.event.pull_request.body }}
+        shell: bash
+        run: |
+          docker model run ignaciolopezluna020/llama3.2-1b "Review this PR description for clarity and completeness based on these guidelines:
+          1. Clearly state the change implemented.
+          2. Include issue numbers if relevant.
+          3. Explicitly state any breaking changes.
+
+          PR Description:
+          \"$PR_DESCRIPTION\""
