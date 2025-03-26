@@ -6,7 +6,7 @@ COMMIT_MSG_FILE=$1
 CODE_DIFF=$(git diff)
 
 # Generate the commit message using Docker Model Runner, passing the diff as input
-COMMIT_MESSAGE=$(docker model run ignaciolopezluna020/llama3.2:1b "Generate a concise and descriptive Git commit message based on the following code changes, only return the commit message and nothing else, do not include any other text or explanation, do not include backticks or code blocks. Here is the code diff:
+COMMIT_MESSAGE=$(docker model run ai/llama3.2b "Generate a concise and descriptive Git commit message based on the following code changes, only return the commit message and nothing else, do not include any other text or explanation, do not include backticks or code blocks. Here is the code diff:
 $CODE_DIFF")
 
 # Write the generated message into the commit message file

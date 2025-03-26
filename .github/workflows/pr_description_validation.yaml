@@ -77,14 +77,14 @@ jobs:
       - name: Pull AI Model
         shell: bash
         run: |
-          docker model pull ignaciolopezluna020/llama3.2-1b
+          docker model pull ai/llama3.2
 
       - name: Validate PR Description
         env:
           PR_DESCRIPTION: ${{ github.event.pull_request.body }}
         shell: bash
         run: |
-          docker model run ignaciolopezluna020/llama3.2-1b "Review this PR description for clarity and completeness based on these guidelines:
+          docker model run ai/llama3.2 "Review this PR description for clarity and completeness based on these guidelines:
           1. Clearly state the change implemented.
           2. Include issue numbers if relevant.
           3. Explicitly state any breaking changes.
